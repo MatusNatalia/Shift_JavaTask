@@ -1,9 +1,11 @@
 package org.shift;
 
 import org.shift.exceptions.WrongArgumentException;
+import org.shift.service.Sorter;
 import org.shift.utils.Order;
 import org.shift.utils.Type;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -80,10 +82,14 @@ public class Main {
             System.out.println("Output: "+outputFile);
             System.out.println("Input: ");
             for(String file : inputFiles){
-                System.out.println(file+", ");
+                System.out.println(file+" ");
             }
+            Sorter sorter = new Sorter();
+            sorter.sort(type, order, outputFile, inputFiles);
         } catch (WrongArgumentException e){
             System.out.println(e.getMessage());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }
