@@ -8,16 +8,18 @@ import java.io.IOException;
 import java.util.*;
 
 public class Sorter {
+    private Type type;
 
     private List<Reader> readers = new ArrayList<>();
     private Writer writer;
     private PriorityQueue<QueueElement> queue;
+    private Comparator<QueueElement> comparator;
     public void sort(Type type, Order order, String outputFile, List<String> inputFiles) throws IOException {
+        this.type = type;
         writer = new Writer(outputFile);
         for(String inputFile : inputFiles){
             readers.add(new Reader(inputFile));
         }
-        Comparator<QueueElement> comparator;
         if (type == Type.INT) {
             comparator = Comparator.comparingInt(x -> Integer.parseInt(x.getElement()));
         }
@@ -28,23 +30,51 @@ public class Sorter {
             comparator = comparator.reversed();
         }
         queue = new PriorityQueue<>(inputFiles.size(), comparator);
+        initQueue(queue);
         mergeFiles();
         writer.flush();
     }
 
     private void mergeFiles() throws IOException {
-        for (Reader reader : readers) {
-            queue.add(new QueueElement(reader.getNextElement(), reader));
-        }
+        String lastWrittenElement;
         while(!queue.isEmpty()){
             QueueElement element = queue.poll();
             System.out.println(element.getElement());
             writer.writeElement(element.getElement());
-            String nextElement = element.getReader().getNextElement();
-            if(nextElement != null){
-                queue.add(new QueueElement(nextElement, element.getReader()));
+            Reader reader = element.getReader();
+            String nextElement = reader.getNextElement();
+            while(nextElement != null){
+                if(isValid(nextElement)){
+                    queue.add(new QueueElement(nextElement, reader));
+                    break;
+                }
+                else {
+                    System.err.println("Wrong element '" + nextElement + "' in " + reader.getFileName() + ". Will be ignored");
+                }
+                nextElement = reader.getNextElement();
             }
         }
+    }
+
+    private void initQueue(PriorityQueue<QueueElement> queue){
+        for (Reader reader : readers) {
+            String element = reader.getNextElement();
+            while(!isValid(element)){
+                element = reader.getNextElement();
+            }
+            queue.add(new QueueElement(element, reader));
+        }
+    }
+
+    private boolean isValid(String element){
+        if(type == Type.INT){
+            try{
+                Integer.parseInt(element);
+            } catch (NumberFormatException e){
+                return false;
+            }
+        }
+        return !element.contains(" ");
     }
 
 }

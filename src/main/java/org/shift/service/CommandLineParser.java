@@ -23,7 +23,7 @@ public class CommandLineParser {
             for (i = 0; i < args.length; i++) {
                 if ('-' == args[i].charAt(0)) {
                     if (args[i].length() != 2) {
-                        System.out.println("Unknown flag: " + args[i] + ". Will be ignored\n");
+                        System.err.println("Unknown flag: " + args[i] + ". Will be ignored");
                         continue;
                     }
                     switch (args[i].charAt(1)) {
@@ -56,7 +56,7 @@ public class CommandLineParser {
                                 throw new WrongArgumentException("order redefinition");
                             }
                         default:
-                            System.out.println("Unknown flag: " + args[i] + ". Will be ignored.\n");
+                            System.err.println("Unknown flag: " + args[i] + ". Will be ignored.");
                     }
                 } else {
                     break;
@@ -84,7 +84,7 @@ public class CommandLineParser {
                 System.out.println(file + " ");
             }
         } catch (WrongArgumentException e){
-            System.out.println(e.getMessage());
+            System.err.println(e.getMessage());
         }
     }
 
