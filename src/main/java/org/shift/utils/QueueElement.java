@@ -3,8 +3,8 @@ package org.shift.utils;
 import org.shift.service.Reader;
 
 public class QueueElement {
-    private String element;
-    private Reader reader;
+    private final String element;
+    private final Reader reader;
 
     public QueueElement(String element, Reader reader) {
         this.element = element;

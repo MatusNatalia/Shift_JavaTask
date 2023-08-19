@@ -17,10 +17,15 @@ public class Sorter {
         for(String inputFile : inputFiles){
             readers.add(new Reader(inputFile));
         }
-        Comparator<QueueElement> comparator = null;
-        switch (type) {
-            case INT -> comparator = (x, y) -> order.getValue()*Integer.compare(Integer.parseInt(x.getElement()), Integer.parseInt(y.getElement()));
-            case STRING -> comparator = (x, y) -> order.getValue() * x.getElement().compareTo(y.getElement());
+        Comparator<QueueElement> comparator;
+        if (type == Type.INT) {
+            comparator = Comparator.comparingInt(x -> Integer.parseInt(x.getElement()));
+        }
+        else {
+            comparator = Comparator.comparing(QueueElement::getElement);
+        }
+        if(order == Order.DESC){
+            comparator = comparator.reversed();
         }
         queue = new PriorityQueue<>(inputFiles.size(), comparator);
         mergeFiles();
