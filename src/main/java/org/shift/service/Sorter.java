@@ -50,26 +50,24 @@ public class Sorter {
 
     private void mergeFiles() throws IOException {
         QueueElement lastWrittenElement;
+        Reader reader;
         while(!queue.isEmpty()){
             QueueElement element = queue.poll();
             writer.writeElement(element.getElement());
             lastWrittenElement = element;
-            Reader reader = element.getReader();
-            String nextElement = reader.getNextElement();
-            QueueElement nextQueueElement = new QueueElement(nextElement, reader);
-            while(nextElement != null){
+            reader = element.getReader();
+            QueueElement nextElement = new QueueElement(reader.getNextElement(), reader);
+            while(nextElement.getElement() != null){
                 if(!isValid(nextElement)){
-                    log.warn("Wrong element '" + nextElement + "' in " + reader.getFileName() + ". Ignored");
-                    nextElement = reader.getNextElement();
-                    nextQueueElement.setElement(nextElement);
+                    log.warn("Wrong element '" + nextElement.getElement() + "' in " + reader.getFileName() + ". Ignored");
+                    nextElement.setElement(reader.getNextElement());
                 }
-                else if(isOutOfOrder(nextQueueElement, lastWrittenElement)){
-                    log.warn("Element '" + nextElement + "' in " + reader.getFileName() + " is out of order. Ignored");
-                    nextElement = reader.getNextElement();
-                    nextQueueElement.setElement(nextElement);
+                else if(isOutOfOrder(nextElement, lastWrittenElement)){
+                    log.warn("Element '" + nextElement.getElement() + "' in " + reader.getFileName() + " is out of order. Ignored");
+                    nextElement.setElement(reader.getNextElement());
                 }
                 else {
-                    queue.add(nextQueueElement);
+                    queue.add(nextElement);
                     break;
                 }
             }
@@ -78,26 +76,26 @@ public class Sorter {
 
     private void initQueue(PriorityQueue<QueueElement> queue) throws IOException {
         for (Reader reader : readers) {
-            String element = reader.getNextElement();
-            while(!isValid(element) && element != null){
-                log.warn("Wrong element '" + element + "' in " + reader.getFileName() + ". Ignored");
-                element = reader.getNextElement();
+            QueueElement element = new QueueElement(reader.getNextElement(), reader);
+            while(!isValid(element) && element.getElement() != null){
+                log.warn("Wrong element '" + element.getElement() + "' in " + reader.getFileName() + ". Ignored");
+                element.setElement(reader.getNextElement());
             }
-            if(element != null) {
-                queue.add(new QueueElement(element, reader));
+            if(element.getElement() != null) {
+                queue.add(element);
             }
         }
     }
 
-    private boolean isValid(String element){
+    private boolean isValid(QueueElement element){
         if(type == Type.INT){
             try{
-                Integer.parseInt(element);
+                Integer.parseInt(element.getElement());
             } catch (NumberFormatException e){
                 return false;
             }
         }
-        return !element.contains(" ");
+        return !element.getElement().contains(" ");
     }
 
     private boolean isOutOfOrder(QueueElement element, QueueElement lastElement){
