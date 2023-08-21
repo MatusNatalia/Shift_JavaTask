@@ -5,7 +5,7 @@
             <PatternLayout pattern="%msg%n" />
             <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
         </Console>
-        <File name="File" fileName="Sorter.log">
+        <File name="File" fileName="SorterLogs.log">
             <PatternLayout pattern="%d{yyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
         </File>
     </Appenders>

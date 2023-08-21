@@ -80,6 +80,7 @@ public class Sorter {
         for (Reader reader : readers) {
             String element = reader.getNextElement();
             while(!isValid(element) && element != null){
+                log.warn("Wrong element '" + element + "' in " + reader.getFileName() + ". Ignored");
                 element = reader.getNextElement();
             }
             if(element != null) {
