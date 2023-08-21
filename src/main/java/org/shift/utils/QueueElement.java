@@ -3,7 +3,7 @@ package org.shift.utils;
 import org.shift.service.Reader;
 
 public class QueueElement {
-    private final String element;
+    private String element;
     private final Reader reader;
 
     public QueueElement(String element, Reader reader) {
@@ -17,5 +17,9 @@ public class QueueElement {
 
     public Reader getReader() {
         return reader;
+    }
+
+    public void setElement(String element){
+        this.element = element;
     }
 }

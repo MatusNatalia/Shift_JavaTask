@@ -1,32 +1,20 @@
 package org.shift.service;
 
-import org.shift.exceptions.WrongElementException;
-
 import java.io.*;
 
 public class Reader {
 
-    private BufferedReader bufferedReader;
-    private String fileName;
+    private final BufferedReader bufferedReader;
+    private final String fileName;
 
-    public Reader(String fileName){
+    public Reader(String fileName) throws FileNotFoundException{
         this.fileName = fileName;
         File file = new File(fileName);
-        try {
-            bufferedReader = new BufferedReader(new FileReader(file));
-        } catch (FileNotFoundException e){
-            System.out.println(e.getMessage());
-        }
+        bufferedReader = new BufferedReader(new FileReader(file));
     }
 
-    public String getNextElement(){
-        String nextElement = null;
-        try {
-            nextElement = bufferedReader.readLine();
-        } catch (IOException e){
-            System.err.println(e.getMessage());
-        }
-        return nextElement;
+    public String getNextElement() throws IOException{
+        return bufferedReader.readLine();
     }
 
     public String getFileName(){

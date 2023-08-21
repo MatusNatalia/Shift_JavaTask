@@ -4,20 +4,14 @@ import java.io.*;
 
 public class Writer {
 
-    private BufferedWriter bufferedWriter;
+    private final BufferedWriter bufferedWriter;
 
-    public Writer(String fileName){
+    public Writer(String fileName) throws IOException{
         File file = new File(fileName);
-        try {
-            bufferedWriter = new BufferedWriter(new FileWriter(file));
-        } catch (FileNotFoundException e){
-            System.out.println(e.getMessage());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        bufferedWriter = new BufferedWriter(new FileWriter(file));
     }
 
-    public void writeElement(String element) throws IOException {
+    public void writeElement(String element) throws IOException{
         bufferedWriter.write(element+"\n");
     }
 

@@ -7,56 +7,76 @@ import org.shift.utils.Type;
 import java.io.IOException;
 import java.util.*;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class Sorter {
     private Type type;
-
-    private List<Reader> readers = new ArrayList<>();
+    private final List<Reader> readers = new ArrayList<>();
     private Writer writer;
     private PriorityQueue<QueueElement> queue;
     private Comparator<QueueElement> comparator;
-    public void sort(Type type, Order order, String outputFile, List<String> inputFiles) throws IOException {
+    private static final Logger log = LogManager.getLogger(Sorter.class);
+    public void sort(Type type, Order order, String outputFile, List<String> inputFiles) {
+        log.info("Started sorting");
+        log.debug("Type: " + type);
+        log.debug("Order: " + order);
+        log.debug("Output file: " + outputFile);
+        inputFiles.forEach(file -> log.debug("Input file: " + file));
         this.type = type;
-        writer = new Writer(outputFile);
-        for(String inputFile : inputFiles){
-            readers.add(new Reader(inputFile));
+        try {
+            writer = new Writer(outputFile);
+            for (String inputFile : inputFiles) {
+                readers.add(new Reader(inputFile));
+            }
+            if (type == Type.INT) {
+                comparator = Comparator.comparingInt(x -> Integer.parseInt(x.getElement()));
+            } else {
+                comparator = Comparator.comparing(QueueElement::getElement);
+            }
+            if (order == Order.DESC) {
+                comparator = comparator.reversed();
+            }
+            queue = new PriorityQueue<>(inputFiles.size(), comparator);
+            initQueue(queue);
+            mergeFiles();
+            writer.flush();
+            log.info("Sorting completed successfully");
+        } catch (IOException e){
+            log.error("IO exception: "+e.getMessage());
+            log.info("Sorting failed");
         }
-        if (type == Type.INT) {
-            comparator = Comparator.comparingInt(x -> Integer.parseInt(x.getElement()));
-        }
-        else {
-            comparator = Comparator.comparing(QueueElement::getElement);
-        }
-        if(order == Order.DESC){
-            comparator = comparator.reversed();
-        }
-        queue = new PriorityQueue<>(inputFiles.size(), comparator);
-        initQueue(queue);
-        mergeFiles();
-        writer.flush();
     }
 
     private void mergeFiles() throws IOException {
-        String lastWrittenElement;
+        QueueElement lastWrittenElement;
         while(!queue.isEmpty()){
             QueueElement element = queue.poll();
-            System.out.println(element.getElement());
             writer.writeElement(element.getElement());
+            lastWrittenElement = element;
             Reader reader = element.getReader();
             String nextElement = reader.getNextElement();
+            QueueElement nextQueueElement = new QueueElement(nextElement, reader);
             while(nextElement != null){
-                if(isValid(nextElement)){
-                    queue.add(new QueueElement(nextElement, reader));
-                    break;
+                if(!isValid(nextElement)){
+                    log.warn("Wrong element '" + nextElement + "' in " + reader.getFileName() + ". Ignored");
+                    nextElement = reader.getNextElement();
+                    nextQueueElement.setElement(nextElement);
+                }
+                else if(isOutOfOrder(nextQueueElement, lastWrittenElement)){
+                    log.warn("Element '" + nextElement + "' in " + reader.getFileName() + " is out of order. Ignored");
+                    nextElement = reader.getNextElement();
+                    nextQueueElement.setElement(nextElement);
                 }
                 else {
-                    System.err.println("Wrong element '" + nextElement + "' in " + reader.getFileName() + ". Will be ignored");
+                    queue.add(nextQueueElement);
+                    break;
                 }
-                nextElement = reader.getNextElement();
             }
         }
     }
 
-    private void initQueue(PriorityQueue<QueueElement> queue){
+    private void initQueue(PriorityQueue<QueueElement> queue) throws IOException {
         for (Reader reader : readers) {
             String element = reader.getNextElement();
             while(!isValid(element)){
@@ -75,6 +95,10 @@ public class Sorter {
             }
         }
         return !element.contains(" ");
+    }
+
+    private boolean isOutOfOrder(QueueElement element, QueueElement lastElement){
+        return comparator.compare(element, lastElement) <= 0;
     }
 
 }
