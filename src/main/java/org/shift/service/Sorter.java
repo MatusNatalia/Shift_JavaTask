@@ -79,10 +79,12 @@ public class Sorter {
     private void initQueue(PriorityQueue<QueueElement> queue) throws IOException {
         for (Reader reader : readers) {
             String element = reader.getNextElement();
-            while(!isValid(element)){
+            while(!isValid(element) && element != null){
                 element = reader.getNextElement();
             }
-            queue.add(new QueueElement(element, reader));
+            if(element != null) {
+                queue.add(new QueueElement(element, reader));
+            }
         }
     }
 
