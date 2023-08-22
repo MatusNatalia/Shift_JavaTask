@@ -67,7 +67,7 @@ public class CommandLineParser {
         if (type == Type.UNDEFINED) {
             throw new WrongArgumentException("please define data type");
         }
-        if (args.length < i + 3) {
+        if (args.length < i + 2) {
             throw new WrongArgumentException("too few arguments");
         }
         outputFile = args[i++];
