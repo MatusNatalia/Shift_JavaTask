@@ -99,7 +99,7 @@ public class Sorter {
     }
 
     private boolean isOutOfOrder(QueueElement element, QueueElement lastElement){
-        return comparator.compare(element, lastElement) <= 0;
+        return comparator.compare(element, lastElement) < 0;
     }
 
 }
